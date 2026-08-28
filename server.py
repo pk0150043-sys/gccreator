@@ -381,22 +381,44 @@ async def run_gc_creation_process(username, config):
 
     task_dir = f"./session_temp_{username}_{int(time.time())}"
     
+    browser_args = [
+        "--no-sandbox",
+        "--disable-setuid-sandbox",
+        "--disable-gpu",
+        "--disable-dev-shm-usage",
+        "--disable-blink-features=AutomationControlled",
+        "--no-zygote"
+    ]
+
     try:
         async with async_playwright() as p:
-            browser = await p.chromium.launch_persistent_context(
-                task_dir,
-                headless=is_headless,
-                user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36",
-                viewport={"width": 1280, "height": 800},
-                locale="en-US",
-                timezone_id="Asia/Kolkata",
-                args=[
-                    "--no-sandbox",
-                    "--disable-gpu",
-                    "--disable-dev-shm-usage",
-                    "--disable-blink-features=AutomationControlled"
-                ]
-            )
+            try:
+                browser = await p.chromium.launch_persistent_context(
+                    task_dir,
+                    headless=is_headless,
+                    user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36",
+                    viewport={"width": 1280, "height": 800},
+                    locale="en-US",
+                    timezone_id="Asia/Kolkata",
+                    args=browser_args
+                )
+            except Exception as launch_err:
+                if "Executable doesn't exist" in str(launch_err) or "playwright install" in str(launch_err).lower():
+                    await broadcast_to_user(username, {"type": "log", "level": "warn", "text": "⚠️ [SETUP] Downloading Chromium browser binaries for Linux/Cloud..."})
+                    import subprocess
+                    subprocess.run([sys.executable, "-m", "playwright", "install", "chromium"], check=False)
+                    browser = await p.chromium.launch_persistent_context(
+                        task_dir,
+                        headless=is_headless,
+                        user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36",
+                        viewport={"width": 1280, "height": 800},
+                        locale="en-US",
+                        timezone_id="Asia/Kolkata",
+                        args=browser_args
+                    )
+                else:
+                    raise launch_err
+
             user_tasks[username]["browser_context"] = browser
 
             clean_sid = urllib.parse.unquote(sid)
@@ -768,10 +790,21 @@ def create_app():
 
     return app
 
+def ensure_browsers():
+    try:
+        import subprocess
+        # Check or install playwright chromium if on linux or fresh install
+        if not os.path.exists(os.path.expanduser("~/.cache/ms-playwright")) and os.name != 'nt':
+            print("[SETUP] Ensuring Playwright Chromium binaries are installed...")
+            subprocess.run([sys.executable, "-m", "playwright", "install", "chromium"], check=False)
+    except Exception:
+        pass
+
 if __name__ == '__main__':
     import webbrowser
     import threading
 
+    ensure_browsers()
     load_users()
     load_sessions()
     app = create_app()
