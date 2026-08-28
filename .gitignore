@@ -1,0 +1,21 @@
+# Python Bytecode & Virtual Environments
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+env/
+.env
+
+# Playwright & Temporary Browser Sessions
+session_temp_*
+gc_bot_browser_session/
+test_gc_session/
+test_debug/
+details_dump.html
+*.png
+*.webm
+
+# System & IDE files
+.vscode/
+.idea/
+*.log

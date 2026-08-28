@@ -1,0 +1,20 @@
+[
+    {
+        "username": "OWNER",
+        "password": "PRINCE@9708671",
+        "role": "owner",
+        "created_at": "2026-08-28"
+    },
+    {
+        "username": "PRINCE",
+        "password": "PRINCE@9708671",
+        "role": "owner",
+        "created_at": "2026-08-28"
+    },
+    {
+        "username": "PUBLIC",
+        "password": "PUBLIC@12345",
+        "role": "user",
+        "created_at": "2026-08-28"
+    }
+]

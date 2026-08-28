@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>SERVER GOD CLAN ✦ GC CREATOR 3D WEB ENGINE</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Fira+Code:wght@400;600;700&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <!-- Ambient 3D Animated Background -->
+  <div class="bg-scene">
+    <canvas id="matrixCanvas" class="matrix-canvas"></canvas>
+    <div class="cube cube-1"></div>
+    <div class="cube cube-2"></div>
+    <div class="cube cube-3"></div>
+    <div class="glow-orb orb-gold"></div>
+    <div class="glow-orb orb-cyan"></div>
+    <div class="glow-orb orb-purple"></div>
+    <div class="cyber-grid"></div>
+  </div>
+
+  <!-- Toast Notifications -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- ==================================================== -->
+  <!-- 1. LOGIN SCREEN -->
+  <!-- ==================================================== -->
+  <div id="loginScreen" class="screen active">
+    <div class="login-wrapper">
+      <div class="card-3d login-card">
+        <div class="card-glow"></div>
+        <div class="login-header">
+          <div class="crown-icon">👑</div>
+          <h1 class="glitch-title">SERVER GOD CLAN</h1>
+          <p class="subtitle">GC CREATOR ENGINE ✦ V3.0 WEB</p>
+          <div class="badge-gold">THE ABSOLUTE GOD CLAN</div>
+        </div>
+
+        <!-- Login Role Selector Tabs -->
+        <div class="login-type-tabs">
+          <button type="button" id="tabUserLogin" class="login-type-btn active" onclick="setLoginMode('user')">
+            <span>👤</span> USER LOGIN
+          </button>
+          <button type="button" id="tabOwnerLogin" class="login-type-btn" onclick="setLoginMode('owner')">
+            <span>👑</span> OWNER LOGIN
+          </button>
+        </div>
+
+        <form id="loginForm" class="auth-form" onsubmit="handleLogin(event)">
+          <!-- User mode username field -->
+          <div id="loginUsernameGroup" class="input-group-3d">
+            <label><span class="icon">👤</span> USERNAME</label>
+            <input type="text" id="loginUsername" placeholder="Enter assigned username" autocomplete="username">
+          </div>
+
+          <!-- Password field (common) -->
+          <div class="input-group-3d">
+            <label id="loginPasswordLabel"><span class="icon">🔑</span> PASSWORD</label>
+            <div class="password-wrap">
+              <input type="password" id="loginPassword" placeholder="Enter password" required autocomplete="current-password">
+              <button type="button" class="eye-btn" onclick="togglePasswordVisibility('loginPassword', this)">👁️</button>
+            </div>
+          </div>
+
+          <button type="submit" id="loginBtn" class="btn-3d btn-primary">
+            <span class="btn-content">
+              <span class="btn-icon">⚡</span> LOGIN TO SYSTEM
+            </span>
+            <span class="btn-shine"></span>
+          </button>
+        </form>
+
+        <div class="login-footer">
+          <span>⚡ DEVELOPER ✦ KING | MULTI-DEVICE CLOUD ACCESS ⚡</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================================================== -->
+  <!-- 2. MAIN DASHBOARD -->
+  <!-- ==================================================== -->
+  <div id="dashboardScreen" class="screen">
+    <!-- Top Navigation Bar -->
+    <header class="top-nav">
+      <div class="nav-left">
+        <div class="logo-badge">
+          <span class="crown">👑</span>
+          <span class="brand-text">SERVER GOD CLAN</span>
+        </div>
+        <div id="wsStatusBadge" class="status-pill status-disconnected">
+          <span class="dot"></span> <span class="status-text">OFFLINE</span>
+        </div>
+      </div>
+
+      <!-- Center Tabs (Visible for Owner) -->
+      <div id="ownerTabNav" class="nav-tabs" style="display: none;">
+        <button class="tab-btn active" onclick="switchOwnerTab('creator')">
+          <span class="tab-icon">🔱</span> GC CREATOR & MONITOR
+        </button>
+        <button class="tab-btn" onclick="switchOwnerTab('users')">
+          <span class="tab-icon">⚙️</span> USER MANAGEMENT
+        </button>
+      </div>
+
+      <div class="nav-right">
+        <div class="user-pill">
+          <span class="role-icon" id="userRoleIcon">👤</span>
+          <span id="navUsername" class="user-name">PUBLIC</span>
+          <span id="navUserRole" class="badge-role">USER</span>
+        </div>
+        <button class="btn-logout" onclick="handleLogout()" title="Logout">
+          <span>🚪</span> <span class="logout-text">LOGOUT</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="dashboard-body">
+
+      <!-- ================= TAB 1: GC CREATOR & LIVE MONITOR ================= -->
+      <div id="tabCreator" class="tab-pane active">
+        
+        <!-- ROW 1: ASCII BANNER BOX -->
+        <section class="card-3d banner-card">
+          <div class="banner-controls">
+            <span class="terminal-dots">
+              <span class="dot red"></span>
+              <span class="dot yellow"></span>
+              <span class="dot green"></span>
+            </span>
+            <span class="banner-title">🔱✦ SERVER GOD CLAN TERMINAL CORE ✦🔱</span>
+            <button class="btn-icon-small" onclick="copyBanner()" title="Copy Banner">📋</button>
+          </div>
+          <pre id="asciiBanner" class="ascii-art">
+███████╗███████╗██████╗ ██╗   ██╗███████╗██████╗      ██████╗  ██████╗ ██████╗ 
+██╔════╝██╔════╝██╔══██╗██║   ██║██╔════╝██╔══██╗    ██╔════╝ ██╔═══██╗██╔══██╗
+███████╗█████╗  ██████╔╝██║   ██║█████╗  ██████╔╝    ██║  ███╗██║   ██║██║  ██║
+╚════██║██╔══╝  ██╔══██╗╚██╗ ██╔╝██╔══╝  ██╔══██╗    ██║   ██║██║   ██║██║  ██║
+███████║███████╗██║  ██║ ╚████╔╝ ███████╗██║  ██║    ╚██████╔╝╚██████╔╝██████╔╝
+╚══════╝╚══════╝╚═╝  ╚═╝  ╚═══╝  ╚══════╝╚═╝  ╚═╝     ╚═════╝  ╚═════╝ ╚═════╝ 
+ 👑══════════════════════════════════════════════════════════════════════👑
+  🔱✦ SERVER GOD CLAN GC CREATOR SCRIPT BY KING ✦🔱
+  ⚡ DEVELOPER ✦ KING | THE ABSOLUTE GOD CLAN ✦
+  ⚡ STATUS    ✦ TARGET GROUP INJECTION ACTIVE ✦ 
+ 👑══════════════════════════════════════════════════════════════════════👑</pre>
+        </section>
+
+        <!-- ROW 2: SESSIONS & CONFIGURATION GRID -->
+        <div class="grid-2col">
+          
+          <!-- LEFT CARD: INSTAGRAM SESSION MANAGER -->
+          <section class="card-3d">
+            <div class="card-header">
+              <h3><span class="icon">📁</span> SAVED INSTAGRAM SESSIONS</h3>
+              <button class="btn-small btn-glow" onclick="openAddSessionModal()">
+                <span>➕</span> ADD NEW SESSION
+              </button>
+            </div>
+
+            <div class="session-selector-box">
+              <label class="section-label">🔱 SELECT SESSION FOR CREATION:</label>
+              <div id="sessionList" class="session-list">
+                <div class="loading-spinner">Loading saved sessions...</div>
+              </div>
+            </div>
+
+            <!-- Active Selected Session Display -->
+            <div class="selected-session-banner">
+              <span>SELECTED:</span>
+              <span id="currentSelectedSessionLabel" class="highlight-gold">None Selected</span>
+            </div>
+          </section>
+
+          <!-- RIGHT CARD: GC CREATION CONFIGURATION -->
+          <section class="card-3d">
+            <div class="card-header">
+              <h3><span class="icon">⚙️</span> GC CONFIGURATION</h3>
+              <span class="badge-cyan">DIRECT INJECTION</span>
+            </div>
+
+            <form id="gcConfigForm" onsubmit="handleStartCreation(event)">
+              <div class="form-row">
+                <div class="input-group-3d">
+                  <label>🔱 KITNE GC BANANE HAI? (GC Count)</label>
+                  <div class="counter-input">
+                    <button type="button" class="btn-step" onclick="stepCount(-1)">-</button>
+                    <input type="number" id="gcCount" value="1" min="1" max="100" placeholder="1" required>
+                    <button type="button" class="btn-step" onclick="stepCount(1)">+</button>
+                  </div>
+                </div>
+
+                <div class="input-group-3d">
+                  <label>🔱 DELAY (Seconds)</label>
+                  <input type="number" id="delayBetween" value="5" min="1" max="60" placeholder="5" required>
+                </div>
+              </div>
+
+              <div class="input-group-3d">
+                <label>🔱 GC KA NAME / TITLE KYA RAKHNA HAI?</label>
+                <input type="text" id="gcName" placeholder="e.g. GC BY KING #1" required>
+              </div>
+
+              <div class="input-group-3d">
+                <label>🔱 USERNAMES DAALO (Comma separated, at least 2 users)</label>
+                <textarea id="gcMembers" rows="2" placeholder="e.g. username1, username2, username3..." required></textarea>
+              </div>
+
+              <div class="form-row toggle-row">
+                <div class="toggle-wrap">
+                  <span class="toggle-label">🔱 RUN IN BACKGROUND / HEADLESS?</span>
+                  <label class="switch-3d">
+                    <input type="checkbox" id="headlessMode" checked>
+                    <span class="slider round"></span>
+                  </label>
+                </div>
+              </div>
+
+              <div class="action-buttons-wrap">
+                <button type="submit" id="startBtn" class="btn-3d btn-launch">
+                  <span class="btn-content">
+                    <span class="btn-icon">🚀</span> START GC CREATION
+                  </span>
+                  <span class="btn-shine"></span>
+                </button>
+
+                <button type="button" id="stopBtn" class="btn-3d btn-danger" style="display: none;" onclick="handleStopCreation()">
+                  <span class="btn-content">
+                    <span class="btn-icon">🛑</span> STOP PROCESS
+                  </span>
+                </button>
+              </div>
+            </form>
+          </section>
+
+        </div>
+
+        <!-- ROW 3: LIVE STATS & TERMINAL CONSOLE -->
+        <section class="card-3d terminal-card">
+          <div class="card-header terminal-header">
+            <div class="terminal-left">
+              <span class="icon">⚡</span>
+              <h3>LIVE REAL-TIME TERMINAL</h3>
+              <span id="taskStatusPill" class="badge-status badge-idle">IDLE</span>
+            </div>
+
+            <div class="stats-ribbon">
+              <div class="stat-pill"><span class="stat-lbl">TOTAL:</span> <b id="statTotal">0</b></div>
+              <div class="stat-pill stat-success"><span class="stat-lbl">CREATED:</span> <b id="statCreated">0</b></div>
+              <div class="stat-pill stat-failed"><span class="stat-lbl">FAILED:</span> <b id="statFailed">0</b></div>
+              <div class="stat-pill stat-current"><span class="stat-lbl">ACTIVE GC:</span> <b id="statCurrent">#0</b></div>
+            </div>
+
+            <div class="terminal-actions">
+              <button class="btn-icon-small" onclick="clearTerminal()" title="Clear Terminal">🧹</button>
+            </div>
+          </div>
+
+          <!-- Progress Bar -->
+          <div class="progress-bar-wrap">
+            <div id="progressBar" class="progress-bar-fill" style="width: 0%;"></div>
+          </div>
+
+          <!-- Terminal Output Box -->
+          <div id="terminalBody" class="terminal-body">
+            <div class="term-line term-system">👑 [SYSTEM] SERVER GOD CLAN WEB CONSOLE INITIALIZED. READY TO LAUNCH.</div>
+          </div>
+
+          <!-- Created Threads List -->
+          <div id="createdThreadsWrap" class="created-threads-box" style="display: none;">
+            <label class="section-label">🎉 CREATED GROUP CHAT THREADS:</label>
+            <div id="createdThreadsList" class="threads-chips"></div>
+          </div>
+        </section>
+
+        <!-- ROW 4: OWNER ONLY - MULTI-USER LIVE MONITOR -->
+        <section id="ownerLiveMonitorCard" class="card-3d" style="display: none;">
+          <div class="card-header">
+            <h3><span class="icon">👁️</span> ALL ACTIVE USERS & RUNNING PROCESSES (OWNER MONITOR)</h3>
+            <button class="btn-small btn-glow" onclick="fetchLiveMonitor()">🔄 REFRESH MONITOR</button>
+          </div>
+          <div id="ownerMonitorGrid" class="monitor-grid">
+            <div class="loading-spinner">Fetching live multi-user monitor data...</div>
+          </div>
+        </section>
+
+      </div>
+
+      <!-- ================= TAB 2: USER MANAGEMENT (OWNER ONLY) ================= -->
+      <div id="tabUsers" class="tab-pane">
+        <section class="card-3d">
+          <div class="card-header">
+            <div>
+              <h3><span class="icon">👥</span> USER MODIFICATION & ACCESS CONTROL</h3>
+              <p class="header-desc">Manage who can log into the Server God Clan GC Creator platform.</p>
+            </div>
+            <button class="btn-3d btn-primary btn-add-user" onclick="openAddUserModal()">
+              <span>➕</span> ADD NEW USER
+            </button>
+          </div>
+
+          <div class="table-responsive">
+            <table class="cyber-table">
+              <thead>
+                <tr>
+                  <th>USERNAME</th>
+                  <th>PASSWORD</th>
+                  <th>ROLE</th>
+                  <th>CREATED AT</th>
+                  <th>ACTIONS</th>
+                </tr>
+              </thead>
+              <tbody id="usersTableBody">
+                <tr><td colspan="5" class="text-center">Loading users...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- ==================================================== -->
+  <!-- MODALS -->
+  <!-- ==================================================== -->
+
+  <!-- Modal: Add New Instagram Session -->
+  <div id="modalAddSession" class="modal-overlay">
+    <div class="modal-card card-3d">
+      <div class="modal-header">
+        <h3><span class="icon">💾</span> ADD NEW INSTAGRAM SESSION</h3>
+        <button class="modal-close" onclick="closeModal('modalAddSession')">✖</button>
+      </div>
+      <form onsubmit="handleSaveSession(event)">
+        <div class="input-group-3d">
+          <label>SESSION LABEL / NAME</label>
+          <input type="text" id="newSessionLabel" placeholder="e.g. Account_1, Main_IG, kingc" required>
+        </div>
+        <div class="input-group-3d">
+          <label>INSTAGRAM 'sessionid' COOKIE VALUE</label>
+          <textarea id="newSessionId" rows="3" placeholder="Paste your instagram sessionid cookie here..." required></textarea>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" onclick="closeModal('modalAddSession')">CANCEL</button>
+          <button type="submit" class="btn-3d btn-primary">SAVE SESSION</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Add New User (Owner) -->
+  <div id="modalAddUser" class="modal-overlay">
+    <div class="modal-card card-3d">
+      <div class="modal-header">
+        <h3><span class="icon">👤</span> ADD AUTHORIZED USER</h3>
+        <button class="modal-close" onclick="closeModal('modalAddUser')">✖</button>
+      </div>
+      <form onsubmit="handleAddUserSubmit(event)">
+        <div class="input-group-3d">
+          <label>USERNAME</label>
+          <input type="text" id="newUsername" placeholder="e.g. VIP_USER1" required>
+        </div>
+        <div class="input-group-3d">
+          <label>PASSWORD</label>
+          <input type="text" id="newUserPassword" placeholder="Enter secure password" required>
+        </div>
+        <div class="input-group-3d">
+          <label>ROLE</label>
+          <select id="newUserRole">
+            <option value="user">User (Standard Access)</option>
+            <option value="owner">Owner (Full Admin Access)</option>
+          </select>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" onclick="closeModal('modalAddUser')">CANCEL</button>
+          <button type="submit" class="btn-3d btn-primary">CREATE USER</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Edit User (Owner) -->
+  <div id="modalEditUser" class="modal-overlay">
+    <div class="modal-card card-3d">
+      <div class="modal-header">
+        <h3><span class="icon">✏️</span> EDIT USER</h3>
+        <button class="modal-close" onclick="closeModal('modalEditUser')">✖</button>
+      </div>
+      <form onsubmit="handleEditUserSubmit(event)">
+        <input type="hidden" id="editOriginalUsername">
+        <div class="input-group-3d">
+          <label>USERNAME</label>
+          <input type="text" id="editUsername" required>
+        </div>
+        <div class="input-group-3d">
+          <label>NEW PASSWORD</label>
+          <input type="text" id="editPassword" placeholder="Leave unchanged or type new password" required>
+        </div>
+        <div class="input-group-3d">
+          <label>ROLE</label>
+          <select id="editRole">
+            <option value="user">User (Standard Access)</option>
+            <option value="owner">Owner (Full Admin Access)</option>
+          </select>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" onclick="closeModal('modalEditUser')">CANCEL</button>
+          <button type="submit" class="btn-3d btn-primary">SAVE CHANGES</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="/app.js"></script>
+</body>
+</html>
