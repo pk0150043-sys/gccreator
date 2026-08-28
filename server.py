@@ -42,18 +42,43 @@ def save_users(users):
     with open(USERS_FILE, "w", encoding="utf-8") as f:
         json.dump(users, f, indent=4)
 
-def load_sessions():
+def load_all_sessions():
     if os.path.exists(SESSIONS_FILE):
         try:
             with open(SESSIONS_FILE, "r", encoding="utf-8") as f:
-                return json.load(f)
+                data = json.load(f)
+                if isinstance(data, dict):
+                    if any(isinstance(v, str) for v in data.values()):
+                        return {"PUBLIC": data}
+                    return data
         except Exception:
             return {}
     return {}
 
-def save_sessions(sessions):
+def save_all_sessions(data):
     with open(SESSIONS_FILE, "w", encoding="utf-8") as f:
-        json.dump(sessions, f, indent=4)
+        json.dump(data, f, indent=4)
+
+def get_user_sessions(username):
+    all_sess = load_all_sessions()
+    return all_sess.get(str(username).upper(), {})
+
+def save_user_session(username, label, sessionid):
+    all_sess = load_all_sessions()
+    u = str(username).upper()
+    if u not in all_sess:
+        all_sess[u] = {}
+    all_sess[u][label] = sessionid
+    save_all_sessions(all_sess)
+
+def delete_user_session(username, label):
+    all_sess = load_all_sessions()
+    u = str(username).upper()
+    if u in all_sess and label in all_sess[u]:
+        del all_sess[u][label]
+        save_all_sessions(all_sess)
+        return True
+    return False
 
 def get_user_from_request(request):
     auth_header = request.headers.get("Authorization", "")
@@ -63,17 +88,19 @@ def get_user_from_request(request):
     return active_tokens.get(token)
 
 async def broadcast_to_user(username, data):
-    if username in user_tasks:
+    uname = str(username).upper()
+    if uname in user_tasks:
         if data.get("type") == "log":
-            user_tasks[username]["logs"].append(data)
-            if len(user_tasks[username]["logs"]) > 300:
-                user_tasks[username]["logs"] = user_tasks[username]["logs"][-300:]
+            user_tasks[uname]["logs"].append(data)
+            if len(user_tasks[uname]["logs"]) > 300:
+                user_tasks[uname]["logs"] = user_tasks[uname]["logs"][-300:]
         elif data.get("type") == "stats":
-            user_tasks[username]["stats"].update(data.get("stats", {}))
+            user_tasks[uname]["stats"].update(data.get("stats", {}))
         elif data.get("type") == "status":
-            user_tasks[username]["status"] = data.get("status", "idle")
+            user_tasks[uname]["status"] = data.get("status", "idle")
 
-    sockets = list(active_websockets.get(username, set()))
+    # Send ONLY to this user's active sockets (Private Terminal)
+    sockets = list(active_websockets.get(uname, set()))
     msg = json.dumps(data)
     for ws in sockets:
         try:
@@ -82,21 +109,22 @@ async def broadcast_to_user(username, data):
         except Exception:
             pass
 
-    # Broadcast task summary updates to Owner sockets
-    for u, u_info in active_tokens.items():
-        if u_info.get("role") == "owner" and u_info.get("username") != username:
-            owner_sockets = list(active_websockets.get(u_info.get("username"), set()))
-            owner_msg = json.dumps({
-                "type": "owner_monitor_update",
-                "target_user": username,
-                "data": data
-            })
-            for ows in owner_sockets:
-                try:
-                    if not ows.closed:
-                        await ows.send_str(owner_msg)
-                except Exception:
-                    pass
+    # Send status updates ONLY to Owner monitor grid (NEVER mixing terminal logs)
+    if data.get("type") in ["status", "stats"]:
+        for u, u_info in active_tokens.items():
+            if u_info.get("role") == "owner" and u_info.get("username").upper() != uname:
+                owner_sockets = list(active_websockets.get(u_info.get("username").upper(), set()))
+                owner_msg = json.dumps({
+                    "type": "owner_monitor_update",
+                    "target_user": uname,
+                    "data": data
+                })
+                for ows in owner_sockets:
+                    try:
+                        if not ows.closed:
+                            await ows.send_str(owner_msg)
+                    except Exception:
+                        pass
 
 # --- AUTH APIS ---
 async def api_login(request):
@@ -160,7 +188,7 @@ async def api_get_sessions(request):
     user = get_user_from_request(request)
     if not user:
         return web.json_response({"success": False, "message": "Unauthorized"}, status=401)
-    sessions = load_sessions()
+    sessions = get_user_sessions(user["username"])
     return web.json_response({"success": True, "sessions": sessions})
 
 async def api_save_session(request):
@@ -173,9 +201,7 @@ async def api_save_session(request):
         sessionid = str(data.get("sessionid", "")).strip()
         if not label or not sessionid:
             return web.json_response({"success": False, "message": "Label and Session ID are required"}, status=400)
-        sessions = load_sessions()
-        sessions[label] = sessionid
-        save_sessions(sessions)
+        save_user_session(user["username"], label, sessionid)
         return web.json_response({"success": True, "message": f"Session '{label}' saved successfully!"})
     except Exception as e:
         return web.json_response({"success": False, "message": str(e)}, status=500)
@@ -185,10 +211,7 @@ async def api_delete_session(request):
     if not user:
         return web.json_response({"success": False, "message": "Unauthorized"}, status=401)
     label = request.match_info.get("label", "")
-    sessions = load_sessions()
-    if label in sessions:
-        del sessions[label]
-        save_sessions(sessions)
+    if delete_user_session(user["username"], label):
         return web.json_response({"success": True, "message": f"Session '{label}' deleted!"})
     return web.json_response({"success": False, "message": "Session not found"}, status=404)
 
@@ -650,7 +673,7 @@ async def api_start_task(request):
         session_id = config.get("session_id", "").strip()
         if not session_id:
             label = config.get("session_label", "").strip()
-            sessions = load_sessions()
+            sessions = get_user_sessions(username)
             session_id = sessions.get(label, "")
             config["session_id"] = session_id
 
