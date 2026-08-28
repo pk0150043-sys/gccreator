@@ -829,7 +829,7 @@ if __name__ == '__main__':
 
     ensure_browsers()
     load_users()
-    load_sessions()
+    load_all_sessions()
     app = create_app()
     port = int(os.environ.get("PORT", 8080))
     url = f"http://localhost:{port}"
